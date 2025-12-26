@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Fitness Trainer - Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* Reset and Base Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+      }
+
+      :root {
+        --primary-black: #000000;
+        --secondary-black: #1a1a1a;
+        --dark-gray: #333333;
+        --medium-gray: #666666;
+        --light-gray: #888888;
+        --background-white: #ffffff;
+        --card-white: #f8f8f8;
+        --border-color: #e0e0e0;
+        --success-color: #4caf50;
+        --error-color: #f44336;
+        --info-color: #2196f3;
+        --active-blue: #1565c0;
+      }
+
+      body {
+        background-color: var(--background-white);
+        color: var(--primary-black);
+        line-height: 1.6;
+        overflow: hidden;
+        height: 100vh;
+      }
+
+      /* Scrollbar Fix - Only show on main content */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+      }
+
+      ::webkit-scrollbar-thumb {
+        background: var(--light-gray);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--medium-gray);
+      }
+
+      /* Notification Styles */
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        max-width: 400px;
+        font-size: 14px;
+        backdrop-filter: blur(10px);
+      }
+
+      .notification.show {
+        transform: translateX(0);
+      }
+
+      .notification.success {
+        background: rgba(0, 0, 0, 0.9);
+        border-left: 4px solid var(--success-color);
+      }
+
+      .notification.error {
+        background: rgba(0, 0, 0, 0.9);
+        border-left: 4px solid var(--error-color);
+      }
+
+      .notification.info {
+        background: rgba(0, 0, 0, 0.9);
+        border-left: 4px solid var(--info-color);
+      }
+
+      /* Loading Overlay */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.98);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        flex-direction: column;
+        gap: 20px;
+        backdrop-filter: blur(5px);
+      }
+
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid var(--primary-black);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Layout */
+      .app-container {
+        display: flex;
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Sidebar - Fixed */
+      .sidebar {
+        width: 280px;
+        background: var(--primary-black);
+        color: var(--background-white);
+        padding: 20px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        z-index: 1000;
+        border-right: 1px solid var(--dark-gray);
+        overflow: hidden;
+      }
+
+      .sidebar-header {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--dark-gray);
+        flex-shrink: 0;
+      }
+
+      .sidebar-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--background-white);
+        letter-spacing: -0.5px;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        padding: 15px;
+        background: var(--secondary-black);
+        border-radius: 8px;
+        border: 1px solid var(--dark-gray);
+        transition: all 0.3s ease;
+      }
+
+      .user-info:hover {
+        border-color: var(--medium-gray);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--background-white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-black);
+        font-weight: bold;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      .user-details h3 {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+
+      .user-details p {
+        font-size: 0.8rem;
+        opacity: 0.8;
+      }
+
+      /* Exercise List - Fixed with Scroll */
+      .exercise-list {
+        margin-bottom: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .exercise-list-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        opacity: 0.9;
+        color: var(--background-white);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+      }
+
+      .exercise-list-container {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+      }
+
+      .exercise-list-container::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .exercise-list-container::-webkit-scrollbar-track {
+        background: var(--secondary-black);
+        border-radius: 3px;
+      }
+
+      .exercise-list-container::-webkit-scrollbar-thumb {
+        background: var(--dark-gray);
+        border-radius: 3px;
+      }
+
+      .exercise-list-container::-webkit-scrollbar-thumb:hover {
+        background: var(--medium-gray);
+      }
+
+      .exercise-item {
+        padding: 12px 15px;
+        margin-bottom: 8px;
+        background: var(--secondary-black);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid var(--dark-gray);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      .exercise-item:hover {
+        background: #222;
+        border-color: var(--medium-gray);
+        transform: translateX(5px);
+      }
+
+      .exercise-item.active {
+        background: var(--background-white);
+        border-color: var(--primary-black);
+        color: var(--primary-black);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .exercise-item.active .exercise-icon {
+        background: var(--primary-black);
+        color: var(--background-white);
+      }
+
+      .exercise-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--dark-gray);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--background-white);
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      /* Sidebar Footer */
+      .sidebar-footer {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid var(--dark-gray);
+        flex-shrink: 0;
+      }
+
+      /* Buttons */
+      .home-btn {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        color: var(--background-white);
+        border: 1px solid var(--medium-gray);
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+      }
+
+      .home-btn:hover {
+        background: #222;
+        border-color: var(--light-gray);
+        transform: translateY(-2px);
+      }
+
+      .control-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 15px 0;
+      }
+
+      .control-btn {
+        padding: 12px;
+        background: var(--background-white);
+        color: var(--primary-black);
+        border: 2px solid var(--primary-black);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        min-height: 44px;
+      }
+
+      .control-btn:hover:not(:disabled) {
+        background: var(--primary-black);
+        color: var(--background-white);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .control-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .control-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f0f0f0;
+        color: var(--light-gray);
+        border-color: var(--border-color);
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      .control-btn.stop {
+        background: var(--primary-black);
+        color: var(--background-white);
+        border: 2px solid var(--primary-black);
+      }
+
+      .control-btn.stop:hover:not(:disabled) {
+        background: #333;
+        border-color: #333;
+      }
+
+      .control-btn.start {
+        background: var(--success-color);
+        color: white;
+        border: 2px solid var(--success-color);
+      }
+
+      .control-btn.start:hover:not(:disabled) {
+        background: #45a049;
+        border-color: #45a049;
+      }
+
+      .logout-btn {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        color: var(--background-white);
+        border: 1px solid var(--medium-gray);
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.9rem;
+      }
+
+      .logout-btn:hover {
+        background: #222;
+        border-color: var(--light-gray);
+        transform: translateY(-2px);
+      }
+
+      /* Main Content */
+      .main-content {
+        flex: 1;
+        margin-left: 280px;
+        height: 100vh;
+        overflow-y: auto;
+        background: var(--background-white);
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--background-white);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+      }
+
+      .menu-toggle {
+        display: none;
+        background: var(--primary-black);
+        color: var(--background-white);
+        border: none;
+        padding: 10px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-black);
+        letter-spacing: -0.5px;
+      }
+
+      /* Dashboard Grid - Improved Layout */
+      .dashboard-grid {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 400px auto;
+        gap: 20px;
+        min-height: calc(100vh - 80px);
+      }
+
+      /* Stats Grid - Enhanced */
+      .stats-grid {
+        grid-column: 1 / 3;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+      }
+
+      .stat-card {
+        background: var(--card-white);
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card:hover {
+        background: #f0f0f0;
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-black);
+      }
+
+      .stat-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--primary-black);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .stat-card:hover::after {
+        transform: translateX(0);
+      }
+
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--primary-black);
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--medium-gray);
+      }
+
+      /* Exercise Section - Fixed Height */
+      .exercise-section {
+        background: var(--card-white);
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--primary-black);
+      }
+
+      /* FIXED: Current Exercise Header - Fixed layout */
+      .current-exercise-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: nowrap;
+        gap: 15px;
+      }
+
+      /* FIXED: Exercise info container */
+      .exercise-info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .exercise-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary-black);
+      }
+
+      /* FIXED: Status and Timer Container - Always visible side by side */
+      .status-timer-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      /* FIXED: Exercise Status - Fixed in place */
+      .exercise-status {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        min-width: 100px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .exercise-status.ready {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+      }
+
+      .exercise-status.active {
+        background: #e3f2fd;
+        color: var(--active-blue);
+        border: 1px solid #bbdefb;
+      }
+
+      .exercise-status.stopped {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #ffcdd2;
+      }
+
+      /* FIXED: Duration Display - Always visible, fixed position */
+      .duration-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--background-white);
+        padding: 8px 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        min-width: 140px;
+        justify-content: center;
+      }
+
+      .duration-label {
+        font-size: 0.85rem;
+        color: var(--medium-gray);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .duration-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary-black);
+        font-family: 'Courier New', monospace;
+        min-width: 50px;
+        text-align: center;
+      }
+
+      /* Rep Counters - Enhanced Layout */
+      .rep-counters {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        flex: 1;
+      }
+
+      .rep-counter {
+        background: var(--background-white);
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .rep-counter:hover {
+        background: #f9f9f9;
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-black);
+      }
+
+      .rep-counter::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-black), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .rep-counter:hover::before {
+        opacity: 1;
+      }
+
+      .rep-counter h4 {
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        opacity: 0.8;
+        color: var(--medium-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+
+      .rep-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 15px 0;
+        color: var(--primary-black);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+      }
+
+      .stage-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--medium-gray);
+        min-height: 20px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      /* Video Section - Fixed Height */
+      .video-section {
+        background: var(--primary-black);
+        border-radius: 8px;
+        border: 1px solid var(--dark-gray);
+        overflow: hidden;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .camera-controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        padding: 15px;
+        background: var(--secondary-black);
+        border-bottom: 1px solid var(--dark-gray);
+        flex-shrink: 0;
+        z-index: 10;
+      }
+
+      .camera-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+      }
+
+      .camera-btn.enable {
+        background: var(--background-white);
+        color: var(--primary-black);
+        border: 1px solid var(--background-white);
+      }
+
+      .camera-btn.enable:hover {
+        background: #f0f0f0;
+        border-color: #f0f0f0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+      }
+
+      .camera-btn.disable {
+        background: var(--medium-gray);
+        color: var(--background-white);
+        border: 1px solid var(--medium-gray);
+      }
+
+      .camera-btn.disable:hover {
+        background: var(--light-gray);
+        border-color: var(--light-gray);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+      }
+
+      /* Video Container - Fixed Height */
+      .video-container {
+        position: relative;
+        flex: 1;
+        background: var(--primary-black);
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+      }
+
+      .video-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        background: var(--primary-black);
+      }
+
+      /* Demo GIF/Image - Full Size */
+      .demo-gif {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+
+      /* Text Overlay on Demo GIF */
+      .demo-text-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 30px;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.9) 0%,
+          rgba(0, 0, 0, 0.7) 30%,
+          rgba(0, 0, 0, 0.4) 60%,
+          transparent 100%
+        );
+        color: white;
+        backdrop-filter: blur(2px);
+      }
+
+      .demo-title {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: var(--background-white);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+
+      .demo-description {
+        opacity: 0.9;
+        margin-bottom: 15px;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        color: #eeeeee;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        max-width: 80%;
+      }
+
+      .demo-camera-status {
+        margin-top: 15px;
+        padding: 10px 15px;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: var(--background-white);
+        backdrop-filter: blur(5px);
+      }
+
+      .demo-camera-status i {
+        color: var(--background-white);
+      }
+
+      /* Fixed Camera Overlay */
+      .camera-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-black);
+        z-index: 5;
+        overflow: hidden;
+      }
+
+      /* Feedback message */
+      .feedback-message {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        background: rgba(255, 0, 0, 0.9);
+        color: white;
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        z-index: 20;
+        border-radius: 6px;
+        max-width: 80%;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      /* Workout History - UPDATED: No internal scroll */
+      .history-section {
+        grid-column: 1 / 3;
+        background: var(--card-white);
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        min-height: 300px;
+        /* Remove overflow properties to allow natural page scrolling */
+        overflow: visible;
+      }
+
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .refresh-btn {
+        background: var(--primary-black);
+        color: var(--background-white);
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.85rem;
+      }
+
+      .refresh-btn:hover {
+        background: #333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      /* History table - UPDATED: No internal scroll */
+      .history-table-container {
+        /* Remove overflow and max-height to allow table to expand naturally */
+        overflow: visible;
+        max-height: none;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+      }
+
+      .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--background-white);
+      }
+
+      .history-table th,
+      .history-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.85rem;
+      }
+
+      .history-table th {
+        background: var(--primary-black);
+        color: var(--background-white);
+        font-weight: 600;
+        /* Remove sticky positioning since we're allowing page scroll */
+        position: static;
+      }
+
+      .history-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .history-table tr:hover {
+        background: #f9f9f9;
+      }
+
+      .empty-history {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--medium-gray);
+        font-size: 0.9rem;
+      }
+
+      .empty-history i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        opacity: 0.3;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1200px) {
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 400px 400px auto;
+          gap: 15px;
+        }
+
+        .stats-grid {
+          grid-column: 1;
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .exercise-section,
+        .video-section,
+        .history-section {
+          grid-column: 1;
+        }
+
+        .video-section {
+          height: 400px;
+        }
+
+        .exercise-section {
+          height: 400px;
+        }
+
+        .demo-text-overlay {
+          padding: 20px;
+        }
+
+        .demo-title {
+          font-size: 1.3rem;
+        }
+
+        .demo-description {
+          font-size: 0.9rem;
+        }
+
+        .history-section {
+          min-height: 300px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+          width: 100%;
+          max-width: 300px;
+          position: fixed;
+          z-index: 1001;
+          transition: transform 0.3s ease;
+        }
+
+        .sidebar.mobile-open {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .menu-toggle {
+          display: block;
+        }
+
+        .page-title {
+          font-size: 1.5rem;
+        }
+
+        .dashboard-grid {
+          padding: 15px;
+          min-height: calc(100vh - 70px);
+          grid-template-rows: auto 350px 350px auto;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        /* FIXED: Responsive adjustments for status-timer container */
+        .current-exercise-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+
+        .status-timer-container {
+          width: 100%;
+          justify-content: space-between;
+          margin-top: 10px;
+        }
+
+        .exercise-status {
+          min-width: 80px;
+          font-size: 0.8rem;
+          padding: 6px 12px;
+        }
+
+        .duration-display {
+          min-width: 120px;
+          padding: 6px 12px;
+        }
+
+        .duration-value {
+          font-size: 0.9rem;
+        }
+
+        .rep-counters {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .video-section {
+          height: 350px;
+        }
+
+        .exercise-section {
+          height: 350px;
+        }
+
+        .rep-counter {
+          padding: 15px;
+        }
+
+        .rep-value {
+          font-size: 2rem;
+        }
+
+        .demo-text-overlay {
+          padding: 15px;
+        }
+
+        .demo-title {
+          font-size: 1.2rem;
+        }
+
+        .demo-description {
+          font-size: 0.85rem;
+          max-width: 90%;
+        }
+
+        .demo-camera-status {
+          font-size: 0.85rem;
+          padding: 8px 12px;
+        }
+
+        .history-table th,
+        .history-table td {
+          padding: 8px 10px;
+          font-size: 0.8rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .dashboard-grid {
+          grid-template-rows: auto 300px 300px auto;
+        }
+
+        .video-section {
+          height: 300px;
+        }
+
+        .exercise-section {
+          height: 300px;
+        }
+
+        /* FIXED: Further mobile adjustments */
+        .status-timer-container {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+        }
+
+        .exercise-status,
+        .duration-display {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .demo-text-overlay {
+          padding: 12px;
+        }
+
+        .demo-title {
+          font-size: 1.1rem;
+        }
+
+        .demo-description {
+          font-size: 0.8rem;
+          max-width: 95%;
+        }
+
+        .rep-value {
+          font-size: 1.8rem;
+        }
+
+        .rep-counters {
+          gap: 8px;
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.3s ease forwards;
+      }
+
+      /* Pulse animation for rep updates */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .rep-update {
+        animation: pulse 0.3s ease;
+      }
+
+      /* Skeleton Loading */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+      }
+
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      /* Fix for images not loading */
+      .demo-gif {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+      }
+
+      /* Improved button transitions */
+      .control-btn,
+      .camera-btn,
+      .refresh-btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Main content scrollbar styling */
+      .main-content::-webkit-scrollbar-track {
+        background: #f5f5f5;
+      }
+
+      .main-content::-webkit-scrollbar-thumb {
+        background: var(--primary-black);
+      }
+
+      .main-content::-webkit-scrollbar-thumb:hover {
+        background: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none">
+      <div class="loading-spinner"></div>
+      <div id="loadingText">Loading Dashboard...</div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <div class="app-container">
+      <!-- Sidebar -->
+      <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">AI FITNESS</div>
+          <div class="user-info">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="user-details">
+              <h3 id="user-name">Loading...</h3>
+              <p id="user-email">user@example.com</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-list">
+          <div class="exercise-list-title">Exercises</div>
+          <div class="exercise-list-container">
+            <div class="exercise-item active" data-exercise="bicep_curl">
+              <div class="exercise-icon">
+                <i class="fas fa-dumbbell"></i>
+              </div>
+              <span>Bicep Curl</span>
+            </div>
+            <div class="exercise-item" data-exercise="lateral_raise">
+              <div class="exercise-icon">
+                <i class="fas fa-arrows-alt-h"></i>
+              </div>
+              <span>Lateral Raise</span>
+            </div>
+            <div class="exercise-item" data-exercise="shoulder_press">
+              <div class="exercise-icon">
+                <i class="fas fa-arrow-up"></i>
+              </div>
+              <span>Shoulder Press</span>
+            </div>
+            <div class="exercise-item" data-exercise="squat">
+              <div class="exercise-icon">
+                <i class="fas fa-running"></i>
+              </div>
+              <span>Squat</span>
+            </div>
+            <div class="exercise-item" data-exercise="dumbbell_row">
+              <div class="exercise-icon">
+                <i class="fas fa-undo"></i>
+              </div>
+              <span>Dumbbell Row</span>
+            </div>
+            <div class="exercise-item" data-exercise="pushup">
+              <div class="exercise-icon">
+                <i class="fas fa-hands"></i>
+              </div>
+              <span>Push Up</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <!-- Home Button -->
+          <button class="home-btn" id="homeBtn">
+            <i class="fas fa-home"></i> Home
+          </button>
+
+          <!-- Control Buttons -->
+          <div class="control-buttons">
+            <button class="control-btn start" id="startBtn">
+              <i class="fas fa-play"></i> Start
+            </button>
+            <button class="control-btn stop" id="stopBtn" disabled>
+              <i class="fas fa-stop"></i> Stop
+            </button>
+          </div>
+          <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div id="main" class="main-content">
+        <div class="header">
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="page-title">Exercise Dashboard</h1>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Stats Row -->
+          <div class="stats-grid">
+            <div class="stat-card fade-in">
+              <div class="stat-value" id="total-workouts">
+                <span class="skeleton" style="width: 60px; height: 32px"></span>
+              </div>
+              <div class="stat-label">
+                <i class="fas fa-dumbbell"></i> Total Workouts
+              </div>
+            </div>
+            <div class="stat-card fade-in">
+              <div class="stat-value" id="total-reps">
+                <span class="skeleton" style="width: 60px; height: 32px"></span>
+              </div>
+              <div class="stat-label">
+                <i class="fas fa-redo"></i> Total Reps
+              </div>
+            </div>
+            <div class="stat-card fade-in">
+              <div class="stat-value" id="current-streak">
+                <span class="skeleton" style="width: 60px; height: 32px"></span>
+              </div>
+              <div class="stat-label">
+                <i class="fas fa-fire"></i> Day Streak
+              </div>
+            </div>
+            <div class="stat-card fade-in">
+              <div class="stat-value" id="calories-burned">
+                <span class="skeleton" style="width: 60px; height: 32px"></span>
+              </div>
+              <div class="stat-label"><i class="fas fa-bolt"></i> Calories</div>
+            </div>
+          </div>
+
+          <!-- Left Column: Exercise Stats -->
+          <div class="exercise-section fade-in">
+            <h2 class="section-title">Current Exercise</h2>
+            
+            <!-- FIXED: New header structure -->
+            <div class="current-exercise-header">
+              <div class="exercise-info">
+                <div class="exercise-name" id="current-exercise-name">
+                  Bicep Curl
+                </div>
+              </div>
+              
+              <div class="status-timer-container">
+                <!-- FIXED: Status badge - stays in place -->
+                <div class="exercise-status ready" id="exercise-status">
+                  Ready
+                </div>
+                
+                <!-- FIXED: Duration display - always visible -->
+                <div class="duration-display" id="durationDisplay">
+                  <div class="duration-label">
+                    <i class="fas fa-clock"></i> Time
+                  </div>
+                  <div class="duration-value" id="durationValue">00:00</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rep-counters">
+              <div class="rep-counter">
+                <h4>TOTAL REPS</h4>
+                <div class="rep-value" id="total-rep-count">
+                  <span
+                    class="skeleton"
+                    style="width: 40px; height: 38px"
+                  ></span>
+                </div>
+                <div class="stage-value" id="stage">
+                  <span
+                    class="skeleton"
+                    style="width: 60px; height: 16px"
+                  ></span>
+                </div>
+              </div>
+              <div class="rep-counter">
+                <h4>LEFT ARM</h4>
+                <div class="rep-value" id="left-rep-count">
+                  <span
+                    class="skeleton"
+                    style="width: 40px; height: 38px"
+                  ></span>
+                </div>
+                <div class="stage-value" id="left-stage">
+                  <span
+                    class="skeleton"
+                    style="width: 60px; height: 16px"
+                  ></span>
+                </div>
+              </div>
+              <div class="rep-counter">
+                <h4>RIGHT ARM</h4>
+                <div class="rep-value" id="right-rep-count">
+                  <span
+                    class="skeleton"
+                    style="width: 40px; height: 38px"
+                  ></span>
+                </div>
+                <div class="stage-value" id="right-stage">
+                  <span
+                    class="skeleton"
+                    style="width: 60px; height: 16px"
+                  ></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Camera -->
+          <div class="video-section fade-in">
+            <div class="camera-controls">
+              <button class="camera-btn disable" id="enableCamera" style="display: none">
+                <i class="fas fa-video"></i> Enable Camera
+              </button>
+              <button
+                class="camera-btn enable"
+                id="disableCamera"
+              >
+                <i class="fas fa-video-slash"></i> Disable Camera
+              </button>
+            </div>
+
+            <div class="video-container">
+              <!-- Camera Overlay -->
+              <div class="camera-overlay" id="cameraOverlay" style="display: none">
+                <!-- Demo GIF/Image will be inserted here by JavaScript -->
+              </div>
+              <img
+                id="video-feed"
+                class="video-feed"
+                alt="Live video feed"
+              />
+              <!-- Feedback message overlay -->
+              <div
+                class="feedback-message"
+                id="feedbackMessage"
+                style="display: none"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Workout History -->
+          <div class="history-section fade-in">
+            <div class="history-header">
+              <h2 class="section-title">Recent Workouts</h2>
+              <button class="refresh-btn" id="refreshHistory">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+            <div class="history-table-container">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Exercise</th>
+                    <th>Date</th>
+                    <th>Reps</th>
+                    <th>Duration</th>
+                    <th>Calories</th>
+                  </tr>
+                </thead>
+                <tbody id="workout-history">
+                  <tr>
+                    <td colspan="5" class="empty-history">
+                      <i class="fas fa-dumbbell"></i><br />
+                      Loading workout history...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Exercise demo data with better layout
+      const exerciseDemos = {
+        bicep_curl: {
+          title: "Bicep Curl",
+          description:
+            "Stand straight, curl dumbbells while keeping elbows close to body. Focus on controlled movements for maximum effectiveness.",
+          image: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+        },
+        lateral_raise: {
+          title: "Lateral Raise",
+          description:
+            "Raise arms sideways to shoulder height, keep slight bend in elbows. Engage shoulder muscles properly.",
+          image: "https://media.giphy.com/media/3o7TKRQrC0jlsmpCXe/giphy.gif",
+        },
+        shoulder_press: {
+          title: "Shoulder Press",
+          description:
+            "Press weights overhead from shoulder height, keep core tight. Maintain proper form throughout.",
+          image: "https://media.giphy.com/media/3o7TKz4aR8Q3vqW3Xa/giphy.gif",
+        },
+        squat: {
+          title: "Squat",
+          description:
+            "Lower hips until thighs are parallel, keep chest up and back straight. Focus on depth and control.",
+          image: "https://media.giphy.com/media/3o7TKz9lUeQX4kK0U8/giphy.gif",
+        },
+        dumbbell_row: {
+          title: "Dumbbell Row",
+          description:
+            "Bend forward, pull dumbbell to chest while keeping back straight. Engage back muscles fully.",
+          image: "https://media.giphy.com/media/3o7TKz7QY1Q3Q3Q3Q/giphy.gif",
+        },
+        pushup: {
+          title: "Push Up",
+          description:
+            "Lower body until chest nearly touches floor, then push back up. Keep body in straight line.",
+          image: "https://media.giphy.com/media/3o7TKz7QY1Q3Q3Q3Q/giphy.gif",
+        },
+      };
+
+      // SVG placeholders for fallback
+      const defaultDemoImages = {
+        bicep_curl:
+          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDE4MCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMxYTFhMWEiLz48cGF0aCBkPSJNNzAgNjAgTDExMCA2MCBNOTAgMzAgTDkwIDkwIiBzdHJva2U9IiNGRkYiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNjAiIHI9IjEwIiBmaWxsPSIjRkZGIi8+PGNpcmNsZSBjeD0iMTEwIiBjeT0iNjAiIHI9IjEwIiBmaWxsPSIjRkZGIi8+PC9zdmc+",
+        lateral_raise:
+          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDE4MCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMxYTFhMWEiLz48cGF0aCBkPSJNNzAgNTAgTDcwIDkwIE0xMTAgNTAgTDExMCA5MCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNNDAgNzAgTDEwIDQwIEw0MCA0MCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTQwIDcwIEwxNzAgNDAgTDE0MCA0MCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+        shoulder_press:
+          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDE4MCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMxYTFhMWEiLz48cGF0aCBkPSJNNzAgODAgTDcwIDQwIE0xMTAgODAgTDExMCA0MCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNNzAgNDAgTDkwIDEwIEwxMTAgNDAiIHN0cm9rZT0iI0ZGRiIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+",
+        squat:
+          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDE4MCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMxYTFhMWEiLz48cGF0aCBkPSJNNzAgNDAgTDkwIDEwMCBMMTEwIDQwIiBzdHJva2U9IiNGRkYiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNDAiIHI9IjYiIGZpbGw9IiNGRkYiLz48Y2lyY2xlIGN4PSIxMTAiIGN5PSI0MCIgcj0iNiIgZmlsbD0iI0ZGRiIvPjwvc3ZnPg==",
+        dumbbell_row:
+          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDE4MCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMxYTFhMWEiLz48cGF0aCBkPSJNNzAgNTAgTDcwIDkwIE0xMTAgNTAgTDExMCA5MCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTAgOTAgTDcwIDUwIE0xNzAgOTAgTDExMCA1MCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+        pushup:
+          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDE4MCB4MjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMxYTFhMWEiLz48cGF0aCBkPSJNNzAgNDAgTDcwIDEwMCBNMTEwIDQwIEwxMTAgMTAwIiBzdHJva2U9IiNGRkYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik03MCAxMDAgTDkwIDcwIEwxMTAgMTAwIiBzdHJva2U9IiNGRkYiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==",
+      };
+
+      // Global state
+      let currentTracking = false;
+      let cameraEnabled = true; // Auto-enable on page load
+      let currentExercise = "bicep_curl";
+      let lastRepCount = 0;
+      let lastLeftRepCount = 0;
+      let lastRightRepCount = 0;
+      let statsUpdateInterval = null;
+      let repsUpdateInterval = null;
+      let videoConnectionActive = false;
+      let durationInterval = null;
+      let exerciseStartTime = null;
+
+      // Notification system
+      function showNotification(message, type = "info", duration = 3000) {
+        const container = document.getElementById("notificationContainer");
+        const notification = document.createElement("div");
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `<span>${message}</span>`;
+
+        container.appendChild(notification);
+
+        setTimeout(() => notification.classList.add("show"), 10);
+
+        setTimeout(() => {
+          notification.classList.remove("show");
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 300);
+        }, duration);
+      }
+
+      // Update exercise demo display
+      function updateExerciseDemo() {
+        const cameraOverlay = document.getElementById("cameraOverlay");
+
+        if (!cameraEnabled) {
+          const demo = exerciseDemos[currentExercise];
+          const defaultImage = defaultDemoImages[currentExercise];
+
+          cameraOverlay.innerHTML = `
+            <img src="${demo.image}" 
+                 class="demo-gif" 
+                 alt="${demo.title}"
+                 onerror="this.src='${defaultImage}'">
+            <div class="demo-text-overlay">
+              <h3 class="demo-title">${demo.title}</h3>
+              <p class="demo-description">${demo.description}</p>
+              <div class="demo-camera-status">
+                <i class="fas fa-video-slash"></i> Camera Disabled - Click "Enable Camera" to start tracking
+              </div>
+            </div>
+          `;
+          cameraOverlay.style.display = "block";
+        } else {
+          cameraOverlay.innerHTML = `
+            <div class="demo-text-overlay">
+              <h3 class="demo-title">Live Camera Feed Active</h3>
+              <p class="demo-description">Position yourself clearly in front of the camera. Make sure you have good lighting and the camera can see your full body.</p>
+            </div>
+          `;
+          cameraOverlay.style.display = "none";
+        }
+      }
+
+      // Format duration as MM:SS
+      function formatDuration(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, "0")}:${secs
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      // Update exercise duration display
+      function updateDurationDisplay() {
+        const durationDisplay = document.getElementById("durationDisplay");
+        const durationValue = document.getElementById("durationValue");
+
+        if (currentTracking && exerciseStartTime) {
+          const elapsedSeconds = Math.floor((Date.now() - exerciseStartTime) / 1000);
+          durationValue.textContent = formatDuration(elapsedSeconds);
+        } else {
+          durationValue.textContent = "00:00";
+        }
+      }
+
+      // Loading overlay
+      function showLoading(text = "Loading...") {
+        const overlay = document.getElementById("loadingOverlay");
+        const loadingText = document.getElementById("loadingText");
+        loadingText.textContent = text;
+        overlay.style.display = "flex";
+      }
+
+      function hideLoading() {
+        const overlay = document.getElementById("loadingOverlay");
+        overlay.style.display = "none";
+      }
+
+      // Simplified fetch function
+      async function safeFetch(url, options = {}) {
+        try {
+          if (!options.headers) {
+            options.headers = {};
+          }
+
+          if (
+            options.method &&
+            options.method !== "GET" &&
+            !options.headers["Content-Type"]
+          ) {
+            options.headers["Content-Type"] = "application/json";
+          }
+
+          const response = await fetch(url, options);
+
+          if (!response.ok) {
+            if (response.status === 401) {
+              showNotification("Session expired. Please login.", "error");
+              setTimeout(() => (window.location.href = "/"), 1000);
+              throw new Error("Authentication required");
+            }
+
+            const errorText = await response.text();
+            let errorMessage = `Error ${response.status}`;
+
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage = errorData.error || errorMessage;
+            } catch {
+              errorMessage = errorText || errorMessage;
+            }
+
+            throw new Error(errorMessage);
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error("Fetch error:", error);
+
+          if (error.message !== "Authentication required") {
+            showNotification(error.message || "Network error", "error");
+          }
+
+          throw error;
+        }
+      }
+
+      // Load user data from session
+      async function loadUserData() {
+        try {
+          const response = await fetch("/api/auth/check");
+          const data = await response.json();
+
+          if (data.authenticated && data.user) {
+            document.getElementById("user-name").textContent =
+              data.user.name || "User";
+            document.getElementById("user-email").textContent =
+              data.user.email || "user@example.com";
+
+            const avatar = document.getElementById("user-avatar");
+            if (data.user.name) {
+              const initials = data.user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase();
+              avatar.textContent = initials.substring(0, 2);
+            }
+          }
+        } catch (error) {
+          console.error("Error loading user data:", error);
+        }
+      }
+
+      // Load user statistics
+      async function loadUserStats() {
+        try {
+          const stats = await safeFetch("/api/user/stats");
+
+          document.getElementById("total-workouts").innerHTML =
+            stats.total_workouts || 0;
+          document.getElementById("total-reps").innerHTML =
+            stats.total_reps || 0;
+          document.getElementById("current-streak").innerHTML =
+            stats.current_streak || 0;
+
+          const calories = stats.total_calories || 0;
+          document.getElementById("calories-burned").innerHTML =
+            Math.round(calories);
+        } catch (error) {
+          console.error("Error loading user stats:", error);
+          document.getElementById("total-workouts").innerHTML = "0";
+          document.getElementById("total-reps").innerHTML = "0";
+          document.getElementById("current-streak").innerHTML = "0";
+          document.getElementById("calories-burned").innerHTML = "0";
+        }
+      }
+
+      // Load workout history
+      async function loadWorkoutHistory() {
+        try {
+          const historyBody = document.getElementById("workout-history");
+          const data = await safeFetch("/api/workouts");
+
+          if (data.workouts && data.workouts.length > 0) {
+            let html = "";
+            data.workouts.forEach((workout) => {
+              const workoutDate = new Date(workout.date);
+              const formattedDate = workoutDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              });
+
+              const duration = workout.duration || 60;
+              const minutes = Math.floor(duration / 60);
+              const seconds = duration % 60;
+              const formattedDuration = `${minutes}:${seconds
+                .toString()
+                .padStart(2, "0")}`;
+
+              const exerciseName = workout.exercise
+                .split("_")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+
+              const calories = workout.calories
+                ? Math.round(workout.calories)
+                : "--";
+
+              html += `
+                <tr>
+                  <td>${exerciseName}</td>
+                  <td>${formattedDate}</td>
+                  <td><strong>${workout.reps}</strong></td>
+                  <td>${formattedDuration}</td>
+                  <td>${calories}</td>
+                </tr>
+              `;
+            });
+
+            historyBody.innerHTML = html;
+          } else {
+            historyBody.innerHTML = `
+              <tr>
+                <td colspan="5" class="empty-history">
+                  <i class="fas fa-dumbbell"></i><br />
+                  No workout history yet
+                </td>
+              </tr>
+            `;
+          }
+        } catch (error) {
+          console.error("Error loading workout history:", error);
+          const historyBody = document.getElementById("workout-history");
+          historyBody.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty-history">
+                <i class="fas fa-exclamation-triangle"></i><br />
+                Failed to load history
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      // Update exercise stats (reps) with animation
+      async function updateExerciseStats() {
+        try {
+          const data = await safeFetch("/get_reps");
+
+          const totalReps = data.reps || 0;
+          const leftReps = data.left_reps || 0;
+          const rightReps = data.right_reps || 0;
+
+          // Update with animation if rep count changed
+          if (totalReps !== lastRepCount) {
+            document
+              .getElementById("total-rep-count")
+              .classList.add("rep-update");
+            setTimeout(() => {
+              document
+                .getElementById("total-rep-count")
+                .classList.remove("rep-update");
+            }, 300);
+            lastRepCount = totalReps;
+          }
+
+          if (leftReps !== lastLeftRepCount) {
+            document
+              .getElementById("left-rep-count")
+              .classList.add("rep-update");
+            setTimeout(() => {
+              document
+                .getElementById("left-rep-count")
+                .classList.remove("rep-update");
+            }, 300);
+            lastLeftRepCount = leftReps;
+          }
+
+          if (rightReps !== lastRightRepCount) {
+            document
+              .getElementById("right-rep-count")
+              .classList.add("rep-update");
+            setTimeout(() => {
+              document
+                .getElementById("right-rep-count")
+                .classList.remove("rep-update");
+            }, 300);
+            lastRightRepCount = rightReps;
+          }
+
+          document.getElementById("total-rep-count").innerHTML = totalReps;
+          document.getElementById("stage").innerHTML = data.stage || "-";
+          document.getElementById("left-rep-count").innerHTML = leftReps;
+          document.getElementById("left-stage").innerHTML =
+            data.left_stage || "-";
+          document.getElementById("right-rep-count").innerHTML = rightReps;
+          document.getElementById("right-stage").innerHTML =
+            data.right_stage || "-";
+
+          // Update feedback message
+          const feedbackMessage = document.getElementById("feedbackMessage");
+          if (data.feedback && data.feedback.trim() !== "") {
+            feedbackMessage.textContent = data.feedback;
+            feedbackMessage.style.display = "block";
+          } else {
+            feedbackMessage.style.display = "none";
+          }
+
+          // Update tracking state
+          if (data.tracking !== currentTracking) {
+            currentTracking = data.tracking;
+            updateTrackingUI(data.tracking);
+          }
+
+          // Update duration if tracking
+          updateDurationDisplay();
+        } catch (error) {
+          console.error("Error fetching reps:", error);
+        }
+      }
+
+      // Update tracking UI
+      function updateTrackingUI(isTracking) {
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const status = document.getElementById("exercise-status");
+
+        if (isTracking) {
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          status.textContent = "Active";
+          status.className = "exercise-status active";
+          exerciseStartTime = Date.now();
+          
+          // Start duration timer
+          if (durationInterval) clearInterval(durationInterval);
+          durationInterval = setInterval(updateDurationDisplay, 1000);
+
+          // Update reps more frequently when tracking
+          if (repsUpdateInterval) clearInterval(repsUpdateInterval);
+          repsUpdateInterval = setInterval(updateExerciseStats, 500);
+        } else {
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+          status.textContent = "Ready";
+          status.className = "exercise-status ready";
+          exerciseStartTime = null;
+          
+          // Stop duration timer
+          if (durationInterval) clearInterval(durationInterval);
+          updateDurationDisplay(); // Update one last time
+
+          // Update reps less frequently when not tracking
+          if (repsUpdateInterval) clearInterval(repsUpdateInterval);
+          repsUpdateInterval = setInterval(updateExerciseStats, 2000);
+        }
+      }
+
+      // Select exercise
+      async function selectExercise(exercise) {
+        const exerciseName = exercise
+          .split("_")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
+        document.getElementById("current-exercise-name").textContent =
+          exerciseName;
+
+        currentExercise = exercise;
+
+        try {
+          await safeFetch("/select_exercise", {
+            method: "POST",
+            body: JSON.stringify({ exercise: exercise }),
+          });
+
+          showNotification(`Switched to ${exerciseName}`);
+          updateExerciseStats();
+          updateExerciseDemo();
+        } catch (error) {
+          console.error("Error selecting exercise:", error);
+          showNotification("Failed to switch exercise", "error");
+        }
+      }
+
+      // Setup video feed connection
+      function setupVideoFeed() {
+        const videoFeed = document.getElementById("video-feed");
+        const cameraOverlay = document.getElementById("cameraOverlay");
+
+        if (!cameraEnabled) {
+          videoFeed.src = "";
+          videoFeed.style.display = "none";
+          cameraOverlay.style.display = "block";
+          updateExerciseDemo();
+          return;
+        }
+
+        videoFeed.src = "/video_feed";
+        videoFeed.style.display = "block";
+        cameraOverlay.style.display = "none";
+        videoConnectionActive = true;
+      }
+
+      // Camera control functions
+      async function enableCamera() {
+        try {
+          const enableBtn = document.getElementById("enableCamera");
+          const disableBtn = document.getElementById("disableCamera");
+
+          showNotification("Enabling camera...", "info");
+
+          await safeFetch("/enable_camera", { method: "POST" });
+
+          cameraEnabled = true;
+          enableBtn.style.display = "none";
+          disableBtn.style.display = "flex";
+
+          setupVideoFeed();
+          showNotification("Camera enabled successfully");
+        } catch (error) {
+          console.error("Error enabling camera:", error);
+          showNotification("Failed to enable camera", "error");
+        }
+      }
+
+      async function disableCamera() {
+        try {
+          const videoFeed = document.getElementById("video-feed");
+          const cameraOverlay = document.getElementById("cameraOverlay");
+          const enableBtn = document.getElementById("enableCamera");
+          const disableBtn = document.getElementById("disableCamera");
+
+          await safeFetch("/disable_camera", { method: "POST" });
+
+          cameraEnabled = false;
+          videoConnectionActive = false;
+
+          videoFeed.src = "";
+          videoFeed.style.display = "none";
+          cameraOverlay.style.display = "block";
+
+          enableBtn.style.display = "flex";
+          disableBtn.style.display = "none";
+
+          updateExerciseDemo();
+          showNotification("Camera disabled");
+        } catch (error) {
+          console.error("Error disabling camera:", error);
+        }
+      }
+
+      // Start tracking
+      async function startTracking() {
+        try {
+          if (
+            !cameraEnabled &&
+            !confirm("Camera is disabled. Continue without camera?")
+          ) {
+            return;
+          }
+
+          await safeFetch("/start_tracking", {
+            method: "POST",
+            body: JSON.stringify({}),
+          });
+
+          currentTracking = true;
+          updateTrackingUI(true);
+          showNotification("Exercise tracking started");
+        } catch (error) {
+          console.error("Error starting tracking:", error);
+          showNotification("Failed to start tracking", "error");
+        }
+      }
+
+      // Stop tracking
+      async function stopTracking() {
+        try {
+          await safeFetch("/stop_tracking", {
+            method: "POST",
+            body: JSON.stringify({}),
+          });
+
+          currentTracking = false;
+          updateTrackingUI(false);
+
+          showNotification("Workout saved successfully");
+
+          await loadUserStats();
+          await loadWorkoutHistory();
+        } catch (error) {
+          console.error("Error stopping tracking:", error);
+          showNotification("Failed to save workout", "error");
+        }
+      }
+
+      // Go to home page
+      function goToHome() {
+        window.location.href = "/landing";
+      }
+
+      // Logout
+      async function logout() {
+        try {
+          await safeFetch("/api/auth/logout", { method: "POST" });
+        } catch (error) {
+          // Continue even if logout API fails
+        }
+
+        window.location.href = "/";
+      }
+
+      // Setup periodic updates
+      function setupPeriodicUpdates() {
+        statsUpdateInterval = setInterval(async () => {
+          await loadUserStats();
+        }, 30000);
+
+        repsUpdateInterval = setInterval(updateExerciseStats, 2000);
+      }
+
+      // Initialize everything
+      async function initializeDashboard() {
+        showLoading("Loading dashboard...");
+
+        try {
+          const response = await fetch("/api/auth/check");
+          const data = await response.json();
+
+          if (!data.authenticated) {
+            showNotification("Please login first", "error");
+            setTimeout(() => (window.location.href = "/"), 1000);
+            return;
+          }
+
+          // Auto-enable camera on page load
+          cameraEnabled = true;
+          setupVideoFeed();
+
+          // Update camera buttons state
+          const enableBtn = document.getElementById("enableCamera");
+          const disableBtn = document.getElementById("disableCamera");
+          enableBtn.style.display = "none";
+          disableBtn.style.display = "flex";
+
+          await loadUserData();
+          await loadUserStats();
+          await loadWorkoutHistory();
+          await updateExerciseStats();
+
+          setupPeriodicUpdates();
+
+          hideLoading();
+          showNotification("Camera auto-enabled on page load", "info", 2000);
+        } catch (error) {
+          console.error("Dashboard initialization error:", error);
+          showNotification("Failed to load dashboard", "error");
+          hideLoading();
+        }
+      }
+
+      // Event listeners
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeDashboard();
+
+        const sidebar = document.getElementById("sidebar");
+        const menuToggle = document.getElementById("menuToggle");
+        const exerciseItems = document.querySelectorAll(".exercise-item");
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const homeBtn = document.getElementById("homeBtn");
+        const refreshHistoryBtn = document.getElementById("refreshHistory");
+        const enableCameraBtn = document.getElementById("enableCamera");
+        const disableCameraBtn = document.getElementById("disableCamera");
+
+        // Menu Toggle
+        menuToggle.addEventListener("click", function () {
+          sidebar.classList.toggle("mobile-open");
+        });
+
+        // Exercise Selection
+        exerciseItems.forEach((item) => {
+          item.addEventListener("click", function () {
+            exerciseItems.forEach((i) => i.classList.remove("active"));
+            this.classList.add("active");
+
+            const exercise = this.getAttribute("data-exercise");
+            selectExercise(exercise);
+          });
+        });
+
+        // Control Buttons
+        startBtn.addEventListener("click", startTracking);
+        stopBtn.addEventListener("click", stopTracking);
+
+        // Camera Controls
+        enableCameraBtn.addEventListener("click", enableCamera);
+        disableCameraBtn.addEventListener("click", disableCamera);
+
+        // Home Button
+        homeBtn.addEventListener("click", goToHome);
+
+        // Logout
+        logoutBtn.addEventListener("click", logout);
+
+        // Refresh History
+        refreshHistoryBtn.addEventListener("click", async () => {
+          await loadWorkoutHistory();
+          showNotification("History refreshed");
+        });
+
+        // Close mobile sidebar when clicking outside
+        document.addEventListener("click", function (event) {
+          if (
+            window.innerWidth <= 768 &&
+            !sidebar.contains(event.target) &&
+            !menuToggle.contains(event.target) &&
+            sidebar.classList.contains("mobile-open")
+          ) {
+            sidebar.classList.remove("mobile-open");
+          }
+        });
+
+        // Auto-refresh stats when page becomes visible
+        document.addEventListener("visibilitychange", function () {
+          if (!document.hidden) {
+            loadUserStats();
+            loadWorkoutHistory();
+            updateExerciseStats();
+
+            if (cameraEnabled && !videoConnectionActive) {
+              setupVideoFeed();
+            }
+          }
+        });
+
+        // Handle page focus
+        window.addEventListener("focus", function () {
+          updateExerciseStats();
+          if (cameraEnabled) {
+            setupVideoFeed();
+          }
+        });
+      });
+
+      // Cleanup on page unload
+      window.addEventListener("beforeunload", function () {
+        if (statsUpdateInterval) clearInterval(statsUpdateInterval);
+        if (repsUpdateInterval) clearInterval(repsUpdateInterval);
+        if (durationInterval) clearInterval(durationInterval);
+
+        if (cameraEnabled) {
+          try {
+            fetch("/disable_camera", {
+              method: "POST",
+              keepalive: true,
+            });
+          } catch (e) {
+            // Ignore errors during unload
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

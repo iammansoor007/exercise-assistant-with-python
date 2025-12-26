@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | AI Fitness Trainer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #000000;
+            --secondary: #ffffff;
+            --accent: #333333;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #8e8e93;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary);
+            color: var(--primary);
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            color: var(--primary);
+        }
+        
+        .back-button {
+            background: var(--primary);
+            color: var(--secondary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .back-button:hover {
+            background: var(--accent);
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 800px;
+            margin: 100px auto 50px;
+            padding: 0 20px;
+        }
+        
+        .privacy-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .privacy-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .privacy-header p {
+            color: var(--dark-gray);
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            margin-bottom: 40px;
+            padding: 10px;
+            background: var(--light-gray);
+            border-radius: 5px;
+        }
+        
+        .privacy-content {
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 40px;
+            border: 1px solid var(--medium-gray);
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .section ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .section li {
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--medium-gray);
+        }
+        
+        .data-table th {
+            background-color: var(--primary);
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            background: var(--light-gray);
+            border-top: 1px solid var(--medium-gray);
+            margin-top: 50px;
+        }
+        
+        footer p {
+            color: var(--dark-gray);
+            margin-bottom: 10px;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .footer-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 80px;
+            }
+            
+            .privacy-content {
+                padding: 20px;
+            }
+            
+            .section h2 {
+                font-size: 1.3rem;
+            }
+            
+            .data-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="/" class="logo">
+                <i class="fas fa-dumbbell logo-icon"></i>
+                AI FITNESS
+            </a>
+            <a href="/signup" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Sign Up
+            </a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <div class="privacy-header">
+            <h1>Privacy Policy</h1>
+            <p>How we collect, use, and protect your personal information</p>
+        </div>
+        
+        <div class="last-updated">
+            Last Updated: November 2023
+        </div>
+        
+        <div class="privacy-content">
+            <div class="section">
+                <h2>1. Introduction</h2>
+                <p>This Privacy Policy explains how the AI Fitness Trainer ("we", "our", or "the Service") collects, uses, and protects your personal information. This is a final year university project designed for educational purposes.</p>
+                <p>By using our Service, you agree to the collection and use of information in accordance with this policy.</p>
+            </div>
+            
+            <div class="section">
+                <h2>2. Information We Collect</h2>
+                <p>We collect several different types of information for various purposes to provide and improve our Service to you.</p>
+                
+                <h3>Personal Data</h3>
+                <p>While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you:</p>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data Type</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Name</td>
+                            <td>Personalization and account identification</td>
+                        </tr>
+                        <tr>
+                            <td>Email Address</td>
+                            <td>Account creation and communication</td>
+                        </tr>
+                        <tr>
+                            <td>Password (hashed)</td>
+                            <td>Account security</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Usage Data</h3>
+                <p>We may also collect information on how the Service is accessed and used:</p>
+                <ul>
+                    <li>Workout history (exercises, reps, duration)</li>
+                    <li>Performance metrics and progress</li>
+                    <li>Exercise preferences and settings</li>
+                </ul>
+                
+                <h3>Camera Data</h3>
+                <p>For exercise analysis, we process video from your camera in real-time. Important notes:</p>
+                <ul>
+                    <li>Video data is processed locally and not stored on our servers</li>
+                    <li>No video recordings are saved permanently</li>
+                    <li>Only pose estimation data (joint positions) is used for analysis</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>3. How We Use Your Information</h2>
+                <p>We use the collected data for various purposes:</p>
+                <ul>
+                    <li>To provide and maintain our Service</li>
+                    <li>To analyze exercise form and provide real-time feedback</li>
+                    <li>To track your workout progress and performance</li>
+                    <li>To personalize your fitness experience</li>
+                    <li>To detect, prevent, and address technical issues</li>
+                    <li>For academic research and project evaluation purposes</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>4. Data Storage and Security</h2>
+                <p>The security of your data is important to us, but remember that no method of transmission over the Internet or method of electronic storage is 100% secure.</p>
+                <p>We implement the following security measures:</p>
+                <ul>
+                    <li>Passwords are hashed using SHA-256</li>
+                    <li>Database connections use proper isolation</li>
+                    <li>Regular security updates and monitoring</li>
+                    <li>Access controls and authentication</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>5. Data Retention</h2>
+                <p>We retain your personal data only for as long as necessary for the purposes set out in this Privacy Policy.</p>
+                <ul>
+                    <li>Account information: Retained until account deletion</li>
+                    <li>Workout data: Retained for progress tracking</li>
+                    <li>Camera data: Not stored (processed in real-time only)</li>
+                </ul>
+                <p>You can request deletion of your account and associated data by contacting us.</p>
+            </div>
+            
+            <div class="section">
+                <h2>6. Third-Party Services</h2>
+                <p>We may employ third-party companies and individuals to facilitate our Service. These third parties have access to your Personal Data only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.</p>
+                <p>Current third-party services used:</p>
+                <ul>
+                    <li>Font Awesome (for icons)</li>
+                    <li>Google Fonts (for typography)</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>7. Your Data Protection Rights</h2>
+                <p>Depending on your location, you may have certain data protection rights. We aim to take reasonable steps to allow you to correct, amend, delete, or limit the use of your Personal Data.</p>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Access your personal data</li>
+                    <li>Correct inaccurate data</li>
+                    <li>Request deletion of your data</li>
+                    <li>Object to processing of your data</li>
+                    <li>Data portability</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>8. Children's Privacy</h2>
+                <p>Our Service does not address anyone under the age of 13 ("Children"). We do not knowingly collect personally identifiable information from children under 13. If you are a parent or guardian and you are aware that your child has provided us with Personal Data, please contact us.</p>
+            </div>
+            
+            <div class="section">
+                <h2>9. Changes to This Privacy Policy</h2>
+                <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.</p>
+                <p>You are advised to review this Privacy Policy periodically for any changes.</p>
+            </div>
+            
+            <div class="section">
+                <h2>10. Contact Us</h2>
+                <p>If you have any questions about this Privacy Policy, please contact us:</p>
+                <p><strong>Email:</strong> privacy@aifitnessproject.edu<br>
+                <strong>University:</strong> Computer Science Department</p>
+                <p>For data deletion requests or privacy concerns, please include "Privacy Request" in your subject line.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2023 AI Fitness Trainer - Final Year University Project</p>
+        <div class="footer-links">
+            <a href="/terms">Terms of Service</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/landing">Home</a>
+            <a href="/signup">Sign Up</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle logo click
+            document.querySelector('.logo').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = '/landing';
+            });
+        });
+    </script>
+</body>
+</html>
