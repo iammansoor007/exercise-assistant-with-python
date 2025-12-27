@@ -1469,4 +1469,6 @@ if __name__ == "__main__":
     print("🎥 Video Feed: http://localhost:8080/video_feed")
     print("=" * 50)
     print("⚡ Starting server on port 8080...")
-    app.run(host='0.0.0.0', port=8080, debug=False, threaded=True, use_reloader=False)
+    
+    # FIXED: Remove the extra indentation and duplicate if statement
+    app.run(host='0.0.0.0', port=10000, debug=False)

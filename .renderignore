@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.db
+*.mp3
+*.jpg
+*.png
+*.git/
+.DS_Store
+fitness_tracker.db
+users.json
+workouts.json
