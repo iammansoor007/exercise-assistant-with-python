@@ -36,40 +36,9 @@ app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
-# Try to import playsound, but continue without it if not available
+# Sound is disabled for Vercel deployment
 SOUND_ENABLED = False
-try:
-    import playsound
-    SOUND_ENABLED = True
-    logger.info("🔊 Sound enabled")
-except ImportError:
-    logger.warning("🔇 Sound disabled - playsound module not found")
-
-# ============ SOUND MANAGEMENT ============
-
-sound_playing = False
-last_sound_time = 0
-
-def play_wrong_sound():
-    """Play sound for incorrect form with cooldown"""
-    global sound_playing, last_sound_time
-    
-    if not SOUND_ENABLED or sound_playing:
-        return
-    
-    now = time.time()
-    if now - last_sound_time < 2:  # Cooldown of 2 seconds
-        return
-    
-    sound_playing = True
-    last_sound_time = now
-    
-    try:
-        playsound.playsound("static/wrong.mp3")
-    except Exception as e:
-        logger.error(f"Error playing sound: {e}")
-    finally:
-        sound_playing = False
+logger.info("🔇 Sound disabled for Vercel compatibility")
 
 # ============ UTILITY FUNCTIONS ============
 
@@ -174,8 +143,6 @@ class ExerciseProcessors:
                 shoulder_movement = abs(left_shoulder.x - left_hip.x) + abs(right_shoulder.x - right_hip.x)
                 if shoulder_movement > 0.3:  # Too much swinging
                     share_state.form_feedback = "Don't swing your body"
-                    if SOUND_ENABLED:
-                        threading.Thread(target=play_wrong_sound, daemon=True).start()
                     
         except Exception as e:
             logger.error(f"Error in bicep curl processing: {e}")
@@ -256,8 +223,6 @@ class ExerciseProcessors:
             
             if avg_back_angle < 80:  # Back is too hunched
                 share_state.form_feedback = "Keep your back straight"
-                if SOUND_ENABLED:
-                    threading.Thread(target=play_wrong_sound, daemon=True).start()
                     
         except Exception as e:
             logger.error(f"Error in squat processing: {e}")
@@ -346,8 +311,6 @@ class ExerciseProcessors:
             
             if hip_drop > 0.1:  # Hips are sagging too low
                 share_state.form_feedback = "Keep your body straight"
-                if SOUND_ENABLED:
-                    threading.Thread(target=play_wrong_sound, daemon=True).start()
                     
         except Exception as e:
             logger.error(f"Error in pushup processing: {e}")
@@ -416,8 +379,6 @@ class ExerciseProcessors:
             
             if left_elbow_position > 0.2 or right_elbow_position > 0.2:
                 share_state.form_feedback = "Keep elbows close to body"
-                if SOUND_ENABLED:
-                    threading.Thread(target=play_wrong_sound, daemon=True).start()
                     
         except Exception as e:
             logger.error(f"Error in shoulder press processing: {e}")
@@ -490,8 +451,6 @@ class ExerciseProcessors:
             
             if left_elbow_angle < 160 or right_elbow_angle < 160:
                 share_state.form_feedback = "Keep arms straight"
-                if SOUND_ENABLED:
-                    threading.Thread(target=play_wrong_sound, daemon=True).start()
                     
         except Exception as e:
             logger.error(f"Error in lateral raise processing: {e}")
@@ -573,8 +532,6 @@ class ExerciseProcessors:
             
             if left_shoulder_angle < 70 or right_shoulder_angle < 70:
                 share_state.form_feedback = "Keep back straight, don't hunch"
-                if SOUND_ENABLED:
-                    threading.Thread(target=play_wrong_sound, daemon=True).start()
                     
         except Exception as e:
             logger.error(f"Error in dumbbell row processing: {e}")
@@ -1452,7 +1409,7 @@ if __name__ == "__main__":
     print("🚀 AI Fitness Trainer Started - FIXED FOR FRONTEND!")
     print("=" * 50)
     print(f"📊 Loaded {len(share_state.exercise_processors)} exercises")
-    print("🔊 Sound enabled:", SOUND_ENABLED)
+    print("🔊 Sound: DISABLED for Vercel deployment")
     print("🎥 VIDEO SYSTEM CONFIGURATION:")
     print("   • Camera starts ENABLED (matches frontend expectation)")
     print("   • Shows live camera feed on page load")
@@ -1468,7 +1425,6 @@ if __name__ == "__main__":
     print("🔐 Authentication: http://localhost:8080/signup")
     print("🎥 Video Feed: http://localhost:8080/video_feed")
     print("=" * 50)
-    print("⚡ Starting server on port 8080...")
+    print("⚡ Starting server on port 10000...")
     
-    # FIXED: Remove the extra indentation and duplicate if statement
     app.run(host='0.0.0.0', port=10000, debug=False)
